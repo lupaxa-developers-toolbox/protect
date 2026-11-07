@@ -1,0 +1,98 @@
+[build-system]
+requires = ["hatchling>=1.18"]
+build-backend = "hatchling.build"
+
+[project]
+name = "lupaxa-protect"
+dynamic = ["version"]
+description = "Keep a sidecar copy of a file so you can edit locally and restore it before committing."
+readme = "README.md"
+license = { file = "LICENCE" }
+requires-python = ">=3.10"
+
+authors = [
+  { name = "The Lupaxa Project" }
+]
+
+keywords = ["backup", "sidecar", "cli", "files"]
+
+dependencies = []
+
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Environment :: Console",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
+  "Topic :: System :: Filesystems",
+  "Topic :: Utilities",
+]
+
+[project.urls]
+Homepage = "https://github.com/lupaxa-developers-toolbox/protect"
+Documentation = "https://github.com/lupaxa-developers-toolbox/protect"
+Repository = "https://github.com/lupaxa-developers-toolbox/protect"
+Issues = "https://github.com/lupaxa-developers-toolbox/protect/issues"
+
+[project.scripts]
+protect = "lupaxa.protect.cli:main"
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.0",
+  "pytest-cov>=5.0",
+  "ruff>=0.6.0",
+  "mypy>=1.12.0",
+  "hatch>=1.12.0",
+  "bump-my-version>=1.2.0",
+]
+test = [
+  "pytest>=8.0",
+  "pytest-cov>=5.0",
+]
+
+[tool.hatch.version]
+path = "src/lupaxa/protect/version.py"
+
+[tool.hatch.build.targets.sdist]
+include = [
+  "src/**",
+  "README.md",
+  "LICENCE",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/lupaxa"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "SIM"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["lupaxa"]
+
+[tool.ruff.format]
+quote-style = "double"
+
+[tool.mypy]
+python_version = "3.10"
+files = ["src", "tests"]
+mypy_path = "src"
+explicit_package_bases = true
+namespace_packages = true
+warn_unused_configs = true
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+addopts = "-ra -q --disable-warnings"
+testpaths = ["tests"]
+pythonpath = ["src"]
