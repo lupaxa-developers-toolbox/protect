@@ -9,12 +9,7 @@ from collections.abc import Iterator
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from lupaxa.protect.constants import (
-    ALLOWED_CONFIG_KEYS,
-    CONFIG_FILENAMES,
-    DEFAULT_EXT,
-    USER_CONFIG_PATH,
-)
+from lupaxa.protect.constants import ALLOWED_CONFIG_KEYS, CONFIG_FILENAMES, DEFAULT_EXT, USER_CONFIG_PATH
 
 
 @dataclass
@@ -71,11 +66,7 @@ def load_json_or_jsonc(path: Path) -> dict[str, object]:
     except OSError as exc:
         raise ValueError(f"Failed to read '{path}': {exc}") from exc
     text = re.sub(r"(?m)^\s*//.*$", "", text)
-    text = re.sub(
-        r'(?m)(?P<code>[^"\\]|\\.|"(?:\\.|[^"\\])*")\s*//.*$',
-        r"\g<code>",
-        text,
-    )
+    text = re.sub(r'(?m)(?P<code>[^"\\]|\\.|"(?:\\.|[^"\\])*")\s*//.*$', r"\g<code>", text)
     text = re.sub(r"/\*.*?\*/", "", text, flags=re.S)
     try:
         loaded = json.loads(text)

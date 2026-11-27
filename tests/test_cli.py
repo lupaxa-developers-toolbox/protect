@@ -53,26 +53,19 @@ def test_node_modules_is_skipped(tmp_path: Path) -> None:
     assert not (nested / "skip.txt.protect").exists()
 
 
-def test_config_dir_is_the_base_when_flag_is_omitted(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
+def test_config_dir_is_the_base_when_flag_is_omitted(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     work = tmp_path / "work"
     other = tmp_path / "other"
     work.mkdir()
     other.mkdir()
     (other / "note.txt").write_text("hi", encoding="utf-8")
-    (work / ".protect.config").write_text(
-        json.dumps({"dir": str(other)}),
-        encoding="utf-8",
-    )
+    (work / ".protect.config").write_text(json.dumps({"dir": str(other)}), encoding="utf-8")
     monkeypatch.chdir(work)
     assert main(["-p", "-y"]) == 0
     assert (other / "note.txt.protect").is_file()
 
 
-def test_verbose_prints_each_action_and_quiet_does_not(
-    tmp_path: Path, capsys: pytest.CaptureFixture[str]
-) -> None:
+def test_verbose_prints_each_action_and_quiet_does_not(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
     (tmp_path / "note.txt").write_text("one", encoding="utf-8")
 
     assert main(["-p", "-d", str(tmp_path), "-y"]) == 0
@@ -123,9 +116,7 @@ def test_requires_an_action(capsys: pytest.CaptureFixture[str]) -> None:
     assert "required" in capsys.readouterr().err
 
 
-def test_status_reports_each_sidecar_state(
-    tmp_path: Path, capsys: pytest.CaptureFixture[str]
-) -> None:
+def test_status_reports_each_sidecar_state(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
     missing = tmp_path / "missing.txt"
     stale = tmp_path / "stale.txt"
     newer = tmp_path / "newer.txt"
@@ -176,10 +167,7 @@ def test_no_recursive_overrides_config(tmp_path: Path) -> None:
     nested.mkdir()
     (tmp_path / "top.txt").write_text("top", encoding="utf-8")
     (nested / "deep.txt").write_text("deep", encoding="utf-8")
-    (tmp_path / ".protect.config").write_text(
-        json.dumps({"recursive": True}),
-        encoding="utf-8",
-    )
+    (tmp_path / ".protect.config").write_text(json.dumps({"recursive": True}), encoding="utf-8")
 
     assert main(["-p", "--no-recursive", "-d", str(tmp_path), "-y"]) == 0
     assert (tmp_path / "top.txt.protect").is_file()
@@ -193,10 +181,7 @@ def test_no_update_overrides_config(tmp_path: Path, capsys: pytest.CaptureFixtur
     sidecar.write_text("old", encoding="utf-8")
     _set_mtime(sidecar, 1_000)
     _set_mtime(source, 2_000)
-    (tmp_path / ".protect.config").write_text(
-        json.dumps({"update": True}),
-        encoding="utf-8",
-    )
+    (tmp_path / ".protect.config").write_text(json.dumps({"update": True}), encoding="utf-8")
 
     assert main(["-p", "--no-update", "-d", str(tmp_path), "-y"]) == 0
     assert sidecar.read_text(encoding="utf-8") == "old"

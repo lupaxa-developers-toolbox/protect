@@ -60,10 +60,7 @@ def should_ignore(path: Path, base: Path, patterns: list[str]) -> bool:
     except ValueError:
         relative = path
     relative_text = relative.as_posix()
-    for pattern in patterns:
-        if fnmatch.fnmatch(path.name, pattern) or fnmatch.fnmatch(relative_text, pattern):
-            return True
-    return False
+    return any(fnmatch.fnmatch(path.name, pattern) or fnmatch.fnmatch(relative_text, pattern) for pattern in patterns)
 
 
 def is_hidden(path: Path) -> bool:
@@ -71,13 +68,7 @@ def is_hidden(path: Path) -> bool:
     return any(part.startswith(".") for part in path.parts if part not in (".",))
 
 
-def iter_files(
-    base: Path,
-    *,
-    recursive: bool,
-    ignores: list[str],
-    include_hidden: bool,
-) -> Iterator[Path]:
+def iter_files(base: Path, *, recursive: bool, ignores: list[str], include_hidden: bool) -> Iterator[Path]:
     """Yield files under ``base``, pruning ignored and unreadable directories."""
     if not recursive:
         yield from _iter_flat(base, ignores, include_hidden)

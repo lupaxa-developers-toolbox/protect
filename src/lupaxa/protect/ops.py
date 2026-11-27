@@ -34,24 +34,10 @@ def expand_user_glob(path_str: str) -> list[Path]:
     return [Path(item) for item in expanded]
 
 
-def collect_sources(
-    *,
-    base: Path,
-    paths: list[str],
-    recursive: bool,
-    include_hidden: bool,
-    ext: str,
-    ignores: list[str],
-) -> list[Path]:
+def collect_sources(*, base: Path, paths: list[str], recursive: bool, include_hidden: bool, ext: str, ignores: list[str]) -> list[Path]:
     """Return source files to back up, excluding existing sidecars."""
     if not paths:
-        return [
-            path
-            for path in iter_files(
-                base, recursive=recursive, ignores=ignores, include_hidden=include_hidden
-            )
-            if not path.name.endswith(ext)
-        ]
+        return [path for path in iter_files(base, recursive=recursive, ignores=ignores, include_hidden=include_hidden) if not path.name.endswith(ext)]
 
     candidates: list[Path] = []
     seen: set[Path] = set()
@@ -65,12 +51,7 @@ def collect_sources(
                 if (include_hidden or not is_hidden(resolved)) and not resolved.name.endswith(ext):
                     candidates.append(resolved)
             elif resolved.is_dir():
-                for found in iter_files(
-                    resolved,
-                    recursive=recursive,
-                    ignores=ignores,
-                    include_hidden=include_hidden,
-                ):
+                for found in iter_files(resolved, recursive=recursive, ignores=ignores, include_hidden=include_hidden):
                     if not found.name.endswith(ext):
                         candidates.append(found)
             else:
@@ -78,15 +59,7 @@ def collect_sources(
     return candidates
 
 
-def collect_backups(
-    *,
-    base: Path,
-    paths: list[str],
-    recursive: bool,
-    include_hidden: bool,
-    ext: str,
-    ignores: list[str],
-) -> list[tuple[Path, Path]]:
+def collect_backups(*, base: Path, paths: list[str], recursive: bool, include_hidden: bool, ext: str, ignores: list[str]) -> list[tuple[Path, Path]]:
     """Return ``(sidecar, original)`` pairs."""
     pairs: list[tuple[Path, Path]] = []
 
@@ -105,9 +78,7 @@ def collect_backups(
         pairs.append((backup, original))
 
     if not paths:
-        for found in iter_files(
-            base, recursive=recursive, ignores=ignores, include_hidden=include_hidden
-        ):
+        for found in iter_files(base, recursive=recursive, ignores=ignores, include_hidden=include_hidden):
             if found.name.endswith(ext):
                 add_backup(found)
         return pairs
@@ -129,12 +100,7 @@ def collect_backups(
                     else:
                         print(f"WARNING: no backup found for '{resolved}'", file=sys.stderr)
             elif resolved.is_dir():
-                for found in iter_files(
-                    resolved,
-                    recursive=recursive,
-                    ignores=ignores,
-                    include_hidden=include_hidden,
-                ):
+                for found in iter_files(resolved, recursive=recursive, ignores=ignores, include_hidden=include_hidden):
                     if found.name.endswith(ext):
                         add_backup(found)
             else:
@@ -142,15 +108,7 @@ def collect_backups(
     return pairs
 
 
-def protect(
-    *,
-    files: list[Path],
-    ext: str,
-    dry: bool,
-    quiet: bool,
-    force: bool,
-    update: bool = False,
-) -> int:
+def protect(*, files: list[Path], ext: str, dry: bool, quiet: bool, force: bool, update: bool = False) -> int:
     """Copy each source to a sidecar. Return 1 when any copy fails."""
     code = 0
     for source in files:
@@ -189,11 +147,7 @@ def _should_replace(source: Path, sidecar: Path, force: bool, update: bool, quie
         return False
     if update:
         return True
-    print(
-        f"WARNING: backup exists for '{source}' and the original is newer. "
-        "Use --update to refresh it, or --force to overwrite.",
-        file=sys.stderr,
-    )
+    print(f"WARNING: backup exists for '{source}' and the original is newer. Use --update to refresh it, or --force to overwrite.", file=sys.stderr)
     return False
 
 
@@ -228,14 +182,7 @@ def status(*, files: list[Path], ext: str, check: bool = False) -> int:
     return code
 
 
-def revert(
-    *,
-    pairs: list[tuple[Path, Path]],
-    dry: bool,
-    quiet: bool,
-    remove_backups: bool,
-    yes: bool,
-) -> int:
+def revert(*, pairs: list[tuple[Path, Path]], dry: bool, quiet: bool, remove_backups: bool, yes: bool) -> int:
     """Restore originals from sidecars. Return 2 when the user cancels."""
     if not pairs:
         _log("No backup files found to revert.", quiet)
@@ -260,16 +207,10 @@ def revert(
                 sidecar.unlink(missing_ok=True)
         except PermissionError as exc:
             code = 1
-            print(
-                f"ERROR reverting '{original}' from '{sidecar}': permission denied: {exc}",
-                file=sys.stderr,
-            )
+            print(f"ERROR reverting '{original}' from '{sidecar}': permission denied: {exc}", file=sys.stderr)
         except FileNotFoundError as exc:
             code = 1
-            print(
-                f"ERROR reverting '{original}' from '{sidecar}': not found: {exc}",
-                file=sys.stderr,
-            )
+            print(f"ERROR reverting '{original}' from '{sidecar}': not found: {exc}", file=sys.stderr)
         except OSError as exc:
             code = 1
             print(f"ERROR reverting '{original}' from '{sidecar}': {exc}", file=sys.stderr)
